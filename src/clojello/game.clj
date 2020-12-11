@@ -205,22 +205,32 @@
   (assoc state :history
          (conj (state :history) state)))
 
+(defn has-moves?
+  [state]
+  (> (count (all-moves state)) 0))
+
+(defn player-cycle-until-move
+  ([state] (player-cycle-until-move state 0))
+  ([state acc]
+   (if (> acc (count (state :players)))
+     false
+     (let [candidate-state (turn-transition state)]
+     (if (has-moves? candidate-state)
+       candidate-state
+       (recur candidate-state (inc acc)))))))
+
 (defn apply-move
   [state loc]
-  (let [candidate-state
-         (turn-transition
-          (move-applier (place-piece (history-commit state)
-                                     loc)
-                        loc
-                        (move-dirs state)))]
-    (if (> (count (all-moves candidate-state)) 0)
-      candidate-state
-      (if (> (count (all-moves (turn-transition
-                                candidate-state)))
-             0)
-        (turn-transition candidate-state)
-        (assoc candidate-state
-               :ended true)))))
+  (let [state-after-move
+        (move-applier (place-piece (history-commit state)
+                                   loc)
+                      loc
+                      (move-dirs state))
+        next-state (player-cycle-until-move state-after-move)]
+    (if next-state
+      next-state
+      (assoc state-after-move
+             :ended true))))
 
 (defn score
   [state]
