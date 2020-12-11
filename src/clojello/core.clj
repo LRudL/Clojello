@@ -150,9 +150,12 @@
 
 (defn game-config
   []
-  (do (println "Press enter for default game,"
-               "enter anything else to customise."
-               "Type undo/quit to undo a move / quit the game.")
+  (do
+    (println "--CLOJELLO--")
+    (println "Press enter for default game,"
+             "enter anything else to customise.")
+    (println
+     "Type undo/quit to undo a move / quit the game.")
     (if (= (read-line) "")
       (game-loop start-state [user-move user-move])
       (let [options (get-user-choices
