@@ -1,4 +1,4 @@
-(defproject clojello "0.2.0"
+(defproject clojello "0.2.1"
   :description "Generalised implementation of Othello."
   :url "https://github.com/LRudL/Clojello"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

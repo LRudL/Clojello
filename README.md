@@ -12,7 +12,7 @@ Project goals:
 Clojello uses [Leiningen](https://leiningen.org/) to automate build stuff. If you have a cloned version of this repository, run `lein uberjar` in the directory to create executable JAR files (Clojure compiles to Java) in the target/uberjar folder. After that, run with:
 
 ```
-java -jar target/uberjar/clojello-0.2.0-standalone.jar
+java -jar target/uberjar/clojello-0.2.1-standalone.jar
 ```
 
 Make sure that Leiningen and Java are installed.

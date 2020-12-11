@@ -1,4 +1,12 @@
 # Change Log
+## [0.2.1] - 2020-12-11
+
+### Changed
+
+- Game now checks if any player can make a move before ending.
+
+
+
 ## [0.2.0] - 2020-12-11
 
 ### Added
@@ -16,6 +24,8 @@
 ### Fixed
 
 - Out-of-bounds checking function.
+
+
 
 ## [0.1.0] - 2020-12-10
 
