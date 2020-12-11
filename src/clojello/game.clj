@@ -54,6 +54,11 @@
 
 (defn new-state
   ([] (new-state [8 8] ['X 'O]))
+  ([xsize ysize player-count]
+   (new-state [xsize ysize]
+              (cond
+                (= player-count 2) ['X 'O]
+                (= player-count 3) ['X 'O 'U])))
   ([dimension-sizes players]
     {:board (board dimension-sizes)
      :players players
@@ -62,11 +67,15 @@
 
 (defn ended? [state] (state :ended))
 
+(defn floor [n] (int (Math/floor n)))
+(defn ceil [n] (int (Math/ceil n)))
 (defn place-starting-pieces
   [state]
-  (let [mids (map (fn [xsize]
-                    (let [mid (int (/ xsize 2))]
-                      [(dec mid) mid]))
+  (let [pnum (count (state :players))
+        mids (map (fn [xsize]
+                    (let [mid (floor (/ xsize 2))]
+                      (range (- mid (floor (/ pnum 2)))
+                             (+ mid (ceil (/ pnum 2))))))
                   (state :dimensions))]
     (assoc state :board
            (pour-pairs-to-map
@@ -91,11 +100,11 @@
        (apply v+ res args)))))
 
 (defn in-range-f [a b] (fn [n] (and (<= a n) (> b n))))
-(defn andf [a b] (and a b))
+(defn orf [a b] (or a b))
 ;^ required because the and macro can't be applied
 (defn out-of-bounds?
   [state loc]
-  (reduce andf
+  (reduce orf
           (map (fn [p] (not (apply (first p) (rest p))))
                (pair (map
                       (fn [dim] (in-range-f 0 dim))
@@ -122,15 +131,17 @@
    (choices-of (repeat (count (state :dimensions))
                        '(-1 0 1)))))
 
-(defn equalsf [val] (fn [input] (= input val)))
+(defn equals-f [val] (fn [input] (= input val)))
 (defn moves-crawler
   [state loc]
   (apply union
     (map (fn [delta]
            (crawler
             state (v+ loc delta) delta
-            (equalsf ((state :players) 1))
-            (equalsf '.)
+            (fn [cont]
+              (and (not= cont '.)
+                   (not= cont ((state :players) 0))))
+            (equals-f '.)
             (fn [state loc acc] #{loc})
             (fn [state] #{})
             #{}))
@@ -153,8 +164,10 @@
     state
     (recur
       (crawler state (v+ loc (first dirs)) (first dirs)
-               (equalsf ((state :players) 1))
-               (equalsf ((state :players) 0))
+               (fn [cont]
+                 (and (not= cont '.)
+                      (not= cont ((state :players) 0))))
+               (equals-f ((state :players) 0))
                (fn [state loc acc]
                  (assoc
                   state :board
@@ -187,13 +200,19 @@
                 loc
                 (first (state :players)))))
 
+(defn history-commit
+  [state]
+  (assoc state :history
+         (conj (state :history) state)))
+
 (defn apply-move
   [state loc]
   (let [candidate-state
-        (turn-transition
-         (move-applier (place-piece state loc)
-                       loc
-                       (move-dirs state)))]
+         (turn-transition
+          (move-applier (place-piece (history-commit state)
+                                     loc)
+                        loc
+                        (move-dirs state)))]
     (if (> (count (all-moves candidate-state)) 0)
       candidate-state
       (if (> (count (all-moves (turn-transition

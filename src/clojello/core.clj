@@ -48,7 +48,7 @@
        (string-array (get-array state))))
 
 (defn alph-range [n]
-  (let [abc "abcdefghijklmnopqrstuvwz"]
+  (let [abc "abcdefghijklmnpqrstuvwz123456789"]
     (map (fn [i] (str (get abc i)))
          ; cast to str to get strings not characters
          ; (otherwise equality testing fails)
@@ -76,21 +76,19 @@
   [state moves]
   (second (first moves)))
 
+(defn user-choice
+  [choices]
+  (let [in (read-line)]
+    (if (contains? choices in)
+      in
+      (do (println "INVALID INPUT. Valid inputs are: "
+                   (vec choices))
+        (recur choices)))))
+
 (defn user-move
   [state moves]
-  (let [in (read-line)]
-    (if (contains? (map-invert moves) in)
-      in
-      (do (println "ERROR. Valid moves are: "
-                   (vals moves))
-        (recur state moves)))))
-
-(defn state-after-move
-  [decision-func state]
-  (let [moves (get-moves state)
-        move (decision-func state moves)
-        move-loc ((map-invert moves) move)]
-    (apply-move state move-loc)))
+  (user-choice (set (concat '("quit" "undo") (vals moves)))))
+; ^ allow Q and U (quit game and undo move)
 
 (defn end-print
   [state]
@@ -106,9 +104,9 @@
 (defn state-print
   [state]
   (do
-    (println "-------------------")
+    (apply println (repeat (second (state :dimensions)) \-))
     (display-state-with-moves state)
-    (println "-------------------")
+    (apply println (repeat (second (state :dimensions)) \-))
     (println "Player" (first (state :players))
              "to play")))
 
@@ -118,14 +116,53 @@
     (end-print state)
     (do
       (state-print state)
-      (let [next-state
-            (state-after-move (first input-funcs)
-                              state)]
-        (recur next-state (cycle-left 1
-                                      input-funcs))))))
+      (let [moves (get-moves state)
+            in (str ((first input-funcs) state moves))]
+        (cond
+          (= in "quit") (println "Game was quit.")
+          (= in "undo") (let [h (state :history)
+                              hlen (count h)]
+                          (cond
+                            (= hlen 0) (recur state input-funcs)
+                            :else (recur
+                                    (first h)
+                                    (cycle-left -1 input-funcs))))
+          :else
+          (let [next-state
+                (apply-move state
+                            ((map-invert moves) in))]
+            (recur next-state (cycle-left 1 input-funcs))))))))
+
+(def board-size-choices (set (map str (range 4 21))))
+
+(defn get-user-choices
+  ([choices] (get-user-choices choices []))
+  ([choices acc]
+   (if (empty? choices)
+     acc
+     (let [choice-name (first (first choices))
+           options (second (first choices))]
+       (do
+         (println "Enter" choice-name)
+         (recur
+           (rest choices)
+           (conj acc (user-choice options))))))))
+
+(defn game-config
+  []
+  (do (println "Press enter for default game,"
+               "enter anything else to customise."
+               "Type undo/quit to undo a move / quit the game.")
+    (if (= (read-line) "")
+      (game-loop start-state [user-move user-move])
+      (let [options (get-user-choices
+                     [["board height" board-size-choices]
+                      ["board width" board-size-choices]
+                      ["number of players" #{"2" "3"}]])]
+        (game-loop (place-starting-pieces
+                    (apply new-state (map read-string options)))
+          [user-move user-move])))))
 
 (defn -main
   [& args]
-  (game-loop
-    start-state
-    [user-move user-move]))
+  (game-config))

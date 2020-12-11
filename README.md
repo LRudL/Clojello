@@ -12,7 +12,7 @@ Project goals:
 Clojello uses [Leiningen](https://leiningen.org/) to automate build stuff. If you have a cloned version of this repository, run `lein uberjar` in the directory to create executable JAR files (Clojure compiles to Java) in the target/uberjar folder. After that, run with:
 
 ```
-java -jar target/uberjar/clojello-0.1.0-SNAPSHOT-standalone.jar
+java -jar target/uberjar/clojello-0.2.0-standalone.jar
 ```
 
 Make sure that Leiningen and Java are installed.
@@ -26,53 +26,53 @@ If a player is to play but has no moves, their turn is skipped. If the next play
 Example gameplay:
 
 ```
--------------------
-               
-               
-        a      
-      X O b    
-    c O X      
-      d        
-               
-               
--------------------
+Press enter for default game, enter anything else to customise. Type undo/quit to undo a move / quit the game.
+.
+Enter board height
+6
+Enter board width
+12
+Enter number of players
+3
+- - - - - - - - - - - -
+                       
+        b c            
+          O U X        
+        a U X O        
+          X O U        
+                       
+- - - - - - - - - - - -
 Player X to play
+a
+- - - - - - - - - - - -
+                       
+                       
+        b O U X        
+        X U X O        
+      a d X O U        
+          c            
+- - - - - - - - - - - -
+Player O to play
+c
+- - - - - - - - - - - -
+                       
+                       
+        a O U X        
+        X O X O        
+        b O O U        
+          O            
+- - - - - - - - - - - -
+Player U to play
 b
--------------------
-               
-               
-      c   b    
-      X X X    
-      O X a    
-               
-               
-               
--------------------
-Player O to play
-a
--------------------
-               
-               
-               
-      X X X    
-      O O O    
-    a e d c b  
-               
-               
--------------------
+- - - - - - - - - - - -
+                       
+        a              
+          O U X        
+        X O X O        
+        U O O U        
+        b O            
+- - - - - - - - - - - -
 Player X to play
-a
--------------------
-               
-               
-    a f b c e  
-      X X X    
-    d X O O    
-    X          
-               
-               
--------------------
-Player O to play
 ...
 ```
 
